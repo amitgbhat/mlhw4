@@ -69,10 +69,10 @@ class MyNeuralNet(object):
         d_error_by_d_b1 = np.sum(((np.transpose(self.weights[1])).dot(delta * sigma_2 * (1 - sigma_2))) * sigma_1 * (1-sigma_1), axis=1).reshape(self.biases[0].shape[0],1)
         d_error_by_d_w1 = (((np.transpose(self.weights[1])).dot(delta * sigma_2 * (1 - sigma_2))) * sigma_1 * (1-sigma_1)).dot(np.transpose(X))
 
-        self.weights[0] = self.weights[0] - self.learning_rate * d_error_by_d_w1;
-        self.weights[1] = self.weights[1] - self.learning_rate * d_error_by_d_w2;
-        self.biases[0] = self.biases[0] - self.learning_rate * d_error_by_d_b1;
-        self.biases[1] = self.biases[1] - self.learning_rate * d_error_by_d_b2;
+        self.weights[0] = self.weights[0] - (self.learning_rate * d_error_by_d_w1);
+        self.weights[1] = self.weights[1] - (self.learning_rate * d_error_by_d_w2);
+        self.biases[0] = self.biases[0] - (self.learning_rate * d_error_by_d_b1);
+        self.biases[1] = self.biases[1] - (self.learning_rate * d_error_by_d_b2);
 
         delta_squared = delta * delta;
         return np.mean(delta_squared) / 2;
