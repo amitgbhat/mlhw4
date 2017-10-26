@@ -2,7 +2,7 @@ import numpy as np
 import scipy.io as sio
 
 def get_random(rows, cols):
-    return np.random.uniform(-10,10,(rows, cols));
+    return np.random.normal(0,1,(rows, cols));
 
 def get_layers(input_dimension, layers, output_dimension):
     
@@ -41,7 +41,6 @@ input_dimension = x.shape[0];
 layers = [100]
 output_dimension = y.shape[0];
 learning_rate = 0.0001;
-examples = x.shape[1]
 
 class MyNeuralNet(object):
     def __init__(self):
@@ -69,10 +68,36 @@ class MyNeuralNet(object):
         d_error_by_d_b1 = np.sum(((np.transpose(self.weights[1])).dot(delta * sigma_2 * (1 - sigma_2))) * sigma_1 * (1-sigma_1), axis=1).reshape(self.biases[0].shape[0],1)
         d_error_by_d_w1 = (((np.transpose(self.weights[1])).dot(delta * sigma_2 * (1 - sigma_2))) * sigma_1 * (1-sigma_1)).dot(np.transpose(X))
 
+        delta_squared = delta * delta;
+        current_cost = np.mean(delta_squared) / 2;
+
+    
+
+        for i in range(50):
+            temp_weight_0 = self.weights[0] - (self.learning_rate * d_error_by_d_w1);
+            temp_weight_1 = self.weights[1] - (self.learning_rate * d_error_by_d_w2);
+            temp_bias_0 = self.biases[0] - (self.learning_rate * d_error_by_d_b1);
+            temp_bias_1 = self.biases[1] - (self.learning_rate * d_error_by_d_b2);
+
+            temp_sigma_1 = sigmoid(temp_weight_0.dot(X) + repeat_horizontally(temp_bias_0, X.shape[1]))
+            temp_sigma_2 = sigmoid(temp_weight_1.dot(temp_sigma_1) + repeat_horizontally(temp_bias_1, temp_sigma_1.shape[1]))
+            temp_delta = temp_sigma_2 - y;
+            temp_delta_squared = temp_delta * temp_delta;
+            temp_cost = np.mean(temp_delta_squared) / 2;
+
+            if temp_cost > current_cost:
+                self.learning_rate = self.learning_rate * 0.99;
+            else:
+                break;
+            
         self.weights[0] = self.weights[0] - (self.learning_rate * d_error_by_d_w1);
         self.weights[1] = self.weights[1] - (self.learning_rate * d_error_by_d_w2);
         self.biases[0] = self.biases[0] - (self.learning_rate * d_error_by_d_b1);
         self.biases[1] = self.biases[1] - (self.learning_rate * d_error_by_d_b2);
+
+        sigma_1 = sigmoid(self.weights[0].dot(X) + repeat_horizontally(self.biases[0], X.shape[1]))
+        sigma_2 = sigmoid(self.weights[1].dot(sigma_1) + repeat_horizontally(self.biases[1], sigma_1.shape[1]))
+        delta = sigma_2 - y;
 
         delta_squared = delta * delta;
         return np.mean(delta_squared) / 2;
@@ -89,23 +114,47 @@ class MyNeuralNet(object):
         return layer_2, np.mean(delta_squared) / 2;
 
 
-neural_net = MyNeuralNet();
+
 
 iterations = 1000;
+max_cost_for_convergence = 0.0001;
 
-prev_cost = neural_net.partial_fit(x, y)
-for i in range(iterations):
-    # print('Predict vs real', neural_net.predict(x), y)
-    # print("Cost: ", neural_net.partial_fit(x, y));
-    cost = neural_net.partial_fit(x, y)
+number_of_networks = 10;
+min_cost = 100;
 
-    if prev_cost > cost:
-        print('reducing learning rate', neural_net.learning_rate)
-        neural_net.learning_rate  = neural_net.learning_rate * 0.9;
+for j in range(number_of_networks):
+        
+    neural_net = MyNeuralNet();
+    prev_cost = neural_net.partial_fit(x, y)
+    for i in range(iterations):
+        # print('Predict vs real', neural_net.predict(x), y)
+        
+        cost = neural_net.partial_fit(x, y)
+        #print("Cost: ", neural_net.partial_fit(x, y));
 
-    prev_cost = cost;
+        if prev_cost - cost < 0.0001:
+            neural_net.learning_rate = neural_net.learning_rate * 1.005;  
 
-# print('Predict vs real', neural_net.predict(x), y)
-predicted,cost = neural_net.predict(x);
+        if cost < max_cost_for_convergence:
+            print('Cost {0} is less than max allowed cost {1}. Breaking'.format(cost, max_cost_for_convergence));
+            break;
+
+        prev_cost = cost;
+
+    predicted,cost = neural_net.predict(x);
+    if cost < min_cost:
+        print('Iteration #{0}: Updating best neural network with cost: {1}'.format(j+1, cost))
+        min_cost = cost;
+        best_neuralnet = neural_net;
+    else:
+        print('Iteration #{0}: Current neural network has cost {1} which is greater than best neural net {2}'.format(j+1, cost, min_cost))
+    
+
+
+predicted,cost = best_neuralnet.predict(x);
 print('predicted & real', predicted, y)
 print("cost",cost);
+np.save("weights_0", best_neuralnet.weights[0])
+np.save("weights_1", best_neuralnet.weights[1])
+np.save("biases_0", best_neuralnet.biases[0])
+np.save("biases_1", best_neuralnet.biases[1])
