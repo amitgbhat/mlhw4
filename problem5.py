@@ -135,7 +135,7 @@ for j in range(number_of_networks):
         cost = neural_net.partial_fit(x, y)
 
         # We see that we are not making much progress in the gradient descent step.
-        # so we increase the learning. The handling for auto decreasing learning rate is present in the
+        # so we increase the learning rate. The handling for auto decreasing learning rate is present in the
         # class definition.
         if prev_cost - cost < 0.0001:
             neural_net.learning_rate = neural_net.learning_rate * 1.005;  
