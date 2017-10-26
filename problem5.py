@@ -11,8 +11,6 @@ def get_layers(input_dimension, layers, output_dimension):
     biases = [];
 
     for layer in layers:
-        # weight = np.random.rand(prev_layer, layer);
-        # bias = np.random.rand(layer);
         weight = get_random(layer, prev_layer);
         bias = get_random(layer,1);
         weights.append(weight);
@@ -21,8 +19,6 @@ def get_layers(input_dimension, layers, output_dimension):
 
     weight = get_random(output_dimension, prev_layer);
     bias = get_random(output_dimension,1);
-    # weight = np.random.rand(prev_layer, output_dimension);
-    # bias = np.random.rand(output_dimension);
     biases.append(bias);
     weights.append(weight);
     return weights, biases;
@@ -36,6 +32,8 @@ def repeat_horizontally(bias, times):
 data = sio.loadmat('hw2data.mat')
 x = np.transpose(data['X'])
 y = np.transpose(data['Y'])
+
+# each row is a feature and each column is a sample.
 
 input_dimension = x.shape[0];
 layers = [100]
@@ -149,7 +147,6 @@ for j in range(number_of_networks):
     else:
         print('Iteration #{0}: Current neural network has cost {1} which is greater than best neural net {2}'.format(j+1, cost, min_cost))
     
-
 
 predicted,cost = best_neuralnet.predict(x);
 print('predicted & real', predicted, y)
